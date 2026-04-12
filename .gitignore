@@ -12,4 +12,3 @@ build/
 *.db
 *.png
 .git_backup*
-README.md

@@ -1,0 +1,3 @@
+# Temporary ignore: Debian bookworm base image does not yet provide fixed OpenSSL package in apt repos
+# Remove once python:* -slim-bookworm ships libssl3/openssl version 3.0.19-1~deb12u2 or later.
+CVE-2026-28390

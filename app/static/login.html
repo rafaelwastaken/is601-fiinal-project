@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="auth-card">
+      <h1>Welcome back</h1>
+      <p class="subtitle">log in to get your jwt token</p>
+      <form data-mode="login" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" required />
+        </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" minlength="8" autocomplete="current-password" required />
+        </div>
+
+        <button type="submit">Login</button>
+      </form>
+
+      <p id="message" class="message" role="status" aria-live="polite"></p>
+      <p id="token" class="token"></p>
+      <div class="nav"><a href="/register.html">new here? create account</a></div>
+    </main>
+    <script src="/static/auth.js"></script>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "module13-e2e",
+  "private": true,
+  "version": "1.0.0",
+  "description": "playwright e2e tests for module 13 jwt auth",
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

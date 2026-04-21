@@ -12,3 +12,6 @@ build/
 *.db
 *.png
 .git_backup*
+node_modules/
+playwright-report/
+test-results/

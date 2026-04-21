@@ -36,6 +36,11 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: set up node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -46,6 +51,25 @@ jobs:
 
       - name: run integration tests
         run: pytest tests/integration
+
+      - name: install e2e dependencies
+        run: npm install
+
+      - name: install playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: run playwright e2e tests
+        shell: bash
+        run: |
+          rm -f app.db
+          uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+          for i in {1..30}; do
+            if curl -sSf http://127.0.0.1:8000/health >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          npm run test:e2e
 
   security:
     needs: test

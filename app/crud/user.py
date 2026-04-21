@@ -23,3 +23,15 @@ def create_user(db: Session, user_in: UserCreate) -> User:
     db.commit()
     db.refresh(user)
     return user
+
+
+def build_unique_username(db: Session, email: str) -> str:
+    base = email.split("@", 1)[0].strip().lower() or "user"
+    candidate = base
+    suffix = 1
+
+    while get_user_by_username(db, candidate):
+        candidate = f"{base}{suffix}"
+        suffix += 1
+
+    return candidate

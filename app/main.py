@@ -1,4 +1,8 @@
+from pathlib import Path
+
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -10,21 +14,73 @@ from app.crud.calculation import (
     list_calculations,
     update_calculation,
 )
-from app.crud.user import create_user, get_user_by_email, get_user_by_username
+from app.crud.user import build_unique_username, create_user, get_user_by_email, get_user_by_username
 from app.db.session import Base, engine, get_db
 from app.schemas.calculation import CalculationCreate, CalculationRead, CalculationUpdate
-from app.schemas.user import LoginResponse, UserCreate, UserLogin, UserRead
-from app.security import verify_password
+from app.schemas.user import (
+    LoginRequest,
+    LoginResponse,
+    RegisterRequest,
+    TokenResponse,
+    UserCreate,
+    UserLogin,
+    UserRead,
+)
+from app.security import create_access_token, verify_password
 
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="IS601 Module 12 API")
 
+STATIC_DIR = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
 
 @app.get("/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/register.html", include_in_schema=False)
+def register_page() -> FileResponse:
+    return FileResponse(STATIC_DIR / "register.html")
+
+
+@app.get("/login.html", include_in_schema=False)
+def login_page() -> FileResponse:
+    return FileResponse(STATIC_DIR / "login.html")
+
+
+@app.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+def register(payload: RegisterRequest, db: Session = Depends(get_db)) -> TokenResponse:
+    if get_user_by_email(db, payload.email):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="email already exists")
+
+    username = build_unique_username(db, payload.email)
+
+    try:
+        create_user(
+            db,
+            UserCreate(username=username, email=payload.email, password=payload.password),
+        )
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="user already exists")
+
+    token = create_access_token(payload.email)
+    return TokenResponse(access_token=token)
+
+
+@app.post("/login", response_model=TokenResponse)
+def login(payload: LoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
+    user = get_user_by_email(db, payload.email)
+
+    if not user or not verify_password(payload.password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid credentials")
+
+    token = create_access_token(user.email)
+    return TokenResponse(access_token=token)
 
 
 @app.post("/users/register", response_model=UserRead, status_code=status.HTTP_201_CREATED)

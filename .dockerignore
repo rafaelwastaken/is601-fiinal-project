@@ -1,0 +1,15 @@
+.git
+.git_backup
+.pytest_cache
+.venv
+venv
+app/.venv
+app/venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.db
+node_modules
+playwright-report
+test-results

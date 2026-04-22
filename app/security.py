@@ -1,12 +1,12 @@
 import os
 from datetime import UTC, datetime, timedelta
 
-from jose import JWTError, jwt
+import jwt
 from passlib.context import CryptContext
 
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-this-in-production")
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "change-this-in-production-min-32-byte-key")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRE_MINUTES = int(os.getenv("JWT_EXPIRE_MINUTES", "60"))
 
@@ -28,5 +28,5 @@ def create_access_token(subject: str) -> str:
 def decode_access_token(token: str) -> dict | None:
     try:
         return jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-    except JWTError:
+    except jwt.InvalidTokenError:
         return None

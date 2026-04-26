@@ -5,7 +5,7 @@ from app.models.calculation import Calculation
 from app.schemas.calculation import CalculationCreate, CalculationUpdate
 
 
-def create_calculation(db: Session, calculation_in: CalculationCreate) -> Calculation:
+def create_calculation(db: Session, user_id: int, calculation_in: CalculationCreate) -> Calculation:
     result = CalculationFactory.calculate(
         a=calculation_in.a,
         b=calculation_in.b,
@@ -13,6 +13,7 @@ def create_calculation(db: Session, calculation_in: CalculationCreate) -> Calcul
     )
 
     calculation = Calculation(
+        user_id=user_id,
         a=calculation_in.a,
         b=calculation_in.b,
         type=calculation_in.type.value,
@@ -24,12 +25,21 @@ def create_calculation(db: Session, calculation_in: CalculationCreate) -> Calcul
     return calculation
 
 
-def list_calculations(db: Session) -> list[Calculation]:
-    return db.query(Calculation).order_by(Calculation.id.asc()).all()
+def list_calculations(db: Session, user_id: int) -> list[Calculation]:
+    return (
+        db.query(Calculation)
+        .filter(Calculation.user_id == user_id)
+        .order_by(Calculation.id.asc())
+        .all()
+    )
 
 
-def get_calculation(db: Session, calculation_id: int) -> Calculation | None:
-    return db.query(Calculation).filter(Calculation.id == calculation_id).first()
+def get_calculation(db: Session, calculation_id: int, user_id: int) -> Calculation | None:
+    return (
+        db.query(Calculation)
+        .filter(Calculation.id == calculation_id, Calculation.user_id == user_id)
+        .first()
+    )
 
 
 def update_calculation(db: Session, calculation: Calculation, payload: CalculationUpdate) -> Calculation:

@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.exc import IntegrityError
@@ -16,6 +17,7 @@ from app.crud.calculation import (
 )
 from app.crud.user import build_unique_username, create_user, get_user_by_email, get_user_by_username
 from app.db.session import Base, engine, get_db
+from app.models.user import User
 from app.schemas.calculation import CalculationCreate, CalculationRead, CalculationUpdate
 from app.schemas.user import (
     LoginRequest,
@@ -27,11 +29,13 @@ from app.schemas.user import (
     UserRead,
 )
 from app.security import create_access_token, verify_password
+from app.security import decode_access_token
 
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="IS601 Module 12 API")
+auth_scheme = HTTPBearer(auto_error=False)
 
 STATIC_DIR = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -50,6 +54,29 @@ def register_page() -> FileResponse:
 @app.get("/login.html", include_in_schema=False)
 def login_page() -> FileResponse:
     return FileResponse(STATIC_DIR / "login.html")
+
+
+@app.get("/calculations.html", include_in_schema=False)
+def calculations_page() -> FileResponse:
+    return FileResponse(STATIC_DIR / "calculations.html")
+
+
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(auth_scheme),
+    db: Session = Depends(get_db),
+) -> User:
+    if credentials is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="not authenticated")
+
+    payload = decode_access_token(credentials.credentials)
+    if payload is None or "sub" not in payload:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid token")
+
+    user = get_user_by_email(db, payload["sub"])
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid token")
+
+    return user
 
 
 @app.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
@@ -111,20 +138,31 @@ def login_user(payload: UserLogin, db: Session = Depends(get_db)) -> LoginRespon
 
 
 @app.get("/calculations", response_model=list[CalculationRead])
-def browse_calculations(db: Session = Depends(get_db)) -> list[CalculationRead]:
-    calculations = list_calculations(db)
+def browse_calculations(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> list[CalculationRead]:
+    calculations = list_calculations(db, current_user.id)
     return [CalculationRead.model_validate(calculation) for calculation in calculations]
 
 
 @app.post("/calculations", response_model=CalculationRead, status_code=status.HTTP_201_CREATED)
-def add_calculation(payload: CalculationCreate, db: Session = Depends(get_db)) -> CalculationRead:
-    calculation = create_calculation(db, payload)
+def add_calculation(
+    payload: CalculationCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> CalculationRead:
+    calculation = create_calculation(db, current_user.id, payload)
     return CalculationRead.model_validate(calculation)
 
 
 @app.get("/calculations/{calculation_id}", response_model=CalculationRead)
-def read_calculation(calculation_id: int, db: Session = Depends(get_db)) -> CalculationRead:
-    calculation = get_calculation(db, calculation_id)
+def read_calculation(
+    calculation_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> CalculationRead:
+    calculation = get_calculation(db, calculation_id, current_user.id)
     if not calculation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="calculation not found")
     return CalculationRead.model_validate(calculation)
@@ -135,8 +173,9 @@ def edit_calculation(
     calculation_id: int,
     payload: CalculationUpdate,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ) -> CalculationRead:
-    calculation = get_calculation(db, calculation_id)
+    calculation = get_calculation(db, calculation_id, current_user.id)
     if not calculation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="calculation not found")
 
@@ -145,8 +184,12 @@ def edit_calculation(
 
 
 @app.delete("/calculations/{calculation_id}", status_code=status.HTTP_204_NO_CONTENT)
-def remove_calculation(calculation_id: int, db: Session = Depends(get_db)) -> None:
-    calculation = get_calculation(db, calculation_id)
+def remove_calculation(
+    calculation_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> None:
+    calculation = get_calculation(db, calculation_id, current_user.id)
     if not calculation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="calculation not found")
 

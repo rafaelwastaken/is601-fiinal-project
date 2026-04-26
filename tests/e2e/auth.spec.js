@@ -9,7 +9,7 @@ test('registers successfully with valid inputs', async ({ page }) => {
   await page.fill('#confirm_password', 'password123');
   await page.click('button[type="submit"]');
 
-  await expect(page.locator('#message')).toHaveText('registration successful');
+  await expect(page).toHaveURL(/\/calculations\.html$/);
   const token = await page.evaluate(() => localStorage.getItem('jwt_token'));
   expect(token).toBeTruthy();
 });
@@ -36,7 +36,7 @@ test('logs in with correct credentials and stores token', async ({ page, request
   await page.fill('#password', 'password123');
   await page.click('button[type="submit"]');
 
-  await expect(page.locator('#message')).toHaveText('login successful');
+  await expect(page).toHaveURL(/\/calculations\.html$/);
   const token = await page.evaluate(() => localStorage.getItem('jwt_token'));
   expect(token).toBeTruthy();
 });

@@ -77,6 +77,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const successText = mode === "register" ? "registration successful" : "login successful";
       setMessage(messageEl, successText, "success");
       form.reset();
+
+      if (data.access_token) {
+        window.location.href = "/calculations.html";
+      }
     } catch {
       setMessage(messageEl, "could not reach server", "error");
     }

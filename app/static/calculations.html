@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Calculations</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="calc-shell">
+      <header class="calc-header">
+        <div>
+          <h1>Calculation Workspace</h1>
+          <p class="subtitle">browse, read, edit, add, and delete your own calculations</p>
+        </div>
+        <div class="header-actions">
+          <a class="ghost-button" href="/login.html">login</a>
+          <button id="logout" class="danger-soft" type="button">Logout</button>
+        </div>
+      </header>
+
+      <p id="auth-status" class="message" role="status" aria-live="polite"></p>
+
+      <section class="calc-grid">
+        <article class="panel">
+          <h2>Add</h2>
+          <form id="add-form" novalidate>
+            <div class="field">
+              <label for="add-a">A</label>
+              <input id="add-a" name="a" type="number" step="any" required />
+            </div>
+            <div class="field">
+              <label for="add-b">B</label>
+              <input id="add-b" name="b" type="number" step="any" required />
+            </div>
+            <div class="field">
+              <label for="add-type">Operation</label>
+              <select id="add-type" name="type">
+                <option>Add</option>
+                <option>Sub</option>
+                <option>Multiply</option>
+                <option>Divide</option>
+              </select>
+            </div>
+            <button type="submit">Create Calculation</button>
+          </form>
+        </article>
+
+        <article class="panel">
+          <h2>Read</h2>
+          <form id="read-form" novalidate>
+            <div class="field">
+              <label for="read-id">Calculation ID</label>
+              <input id="read-id" name="id" type="number" min="1" required />
+            </div>
+            <button type="submit">Get Calculation</button>
+          </form>
+          <pre id="read-result" class="result-box"></pre>
+        </article>
+
+        <article class="panel">
+          <h2>Edit</h2>
+          <form id="edit-form" novalidate>
+            <div class="field">
+              <label for="edit-id">Calculation ID</label>
+              <input id="edit-id" name="id" type="number" min="1" required />
+            </div>
+            <div class="field">
+              <label for="edit-a">A</label>
+              <input id="edit-a" name="a" type="number" step="any" required />
+            </div>
+            <div class="field">
+              <label for="edit-b">B</label>
+              <input id="edit-b" name="b" type="number" step="any" required />
+            </div>
+            <div class="field">
+              <label for="edit-type">Operation</label>
+              <select id="edit-type" name="type">
+                <option>Add</option>
+                <option>Sub</option>
+                <option>Multiply</option>
+                <option>Divide</option>
+              </select>
+            </div>
+            <button type="submit">Update Calculation</button>
+          </form>
+        </article>
+
+        <article class="panel">
+          <h2>Delete</h2>
+          <form id="delete-form" novalidate>
+            <div class="field">
+              <label for="delete-id">Calculation ID</label>
+              <input id="delete-id" name="id" type="number" min="1" required />
+            </div>
+            <button id="delete-submit" class="danger" type="submit">Delete Calculation</button>
+          </form>
+        </article>
+
+        <article class="panel wide">
+          <div class="panel-head">
+            <h2>Browse</h2>
+            <button id="refresh-list" type="button">Refresh</button>
+          </div>
+          <ul id="calc-list" class="calc-list"></ul>
+        </article>
+      </section>
+
+      <p id="calc-message" class="message" role="status" aria-live="polite"></p>
+    </main>
+
+    <script src="/static/calculations.js"></script>
+  </body>
+</html>

@@ -124,6 +124,133 @@ a {
   word-break: break-all;
 }
 
+.calc-shell {
+  width: min(1080px, 100%);
+  background: radial-gradient(circle at top right, #fff3e0, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 20px 45px rgba(194, 65, 12, 0.14);
+  padding: 24px;
+  animation: rise 380ms ease-out;
+}
+
+.calc-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.calc-grid {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.panel {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.panel h2 {
+  margin: 0 0 10px;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.calc-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.calc-item {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  background: #fffbf7;
+  display: grid;
+  gap: 6px;
+}
+
+.list-empty {
+  padding: 10px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  color: var(--muted);
+}
+
+.result-box {
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  min-height: 84px;
+  padding: 10px;
+  white-space: pre-wrap;
+}
+
+select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 12px;
+  font: inherit;
+  color: var(--text);
+  background: #fff;
+}
+
+select:focus {
+  outline: 2px solid #fb923c;
+  outline-offset: 1px;
+}
+
+.ghost-button {
+  display: inline-block;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 9px 12px;
+  color: var(--accent-dark);
+  font-weight: 700;
+  background: #fff;
+}
+
+.ghost-button.small {
+  padding: 7px 10px;
+  width: fit-content;
+}
+
+.danger {
+  background: linear-gradient(90deg, #dc2626, #b91c1c);
+}
+
+.danger-soft {
+  width: auto;
+  padding: 10px 14px;
+  background: linear-gradient(90deg, #dc2626, #b91c1c);
+}
+
 @keyframes rise {
   from {
     opacity: 0;
@@ -138,5 +265,18 @@ a {
 @media (max-width: 600px) {
   .auth-card {
     padding: 20px;
+  }
+
+  .calc-shell {
+    padding: 18px;
+  }
+
+  .calc-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .calc-grid {
+    grid-template-columns: 1fr;
   }
 }

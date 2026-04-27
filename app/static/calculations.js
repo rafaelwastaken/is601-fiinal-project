@@ -1,16 +1,3 @@
-function setMessage(el, message, type) {
-  el.textContent = message;
-  el.className = `message ${type || ""}`.trim();
-}
-
-function getToken() {
-  return localStorage.getItem("jwt_token");
-}
-
-function clearToken() {
-  localStorage.removeItem("jwt_token");
-}
-
 function isFiniteNumber(value) {
   return Number.isFinite(Number(value));
 }
@@ -29,22 +16,6 @@ function validateCalculationPayload(a, b, type) {
   }
 
   return "";
-}
-
-async function apiRequest(path, options = {}) {
-  const token = getToken();
-  const headers = {
-    "Content-Type": "application/json",
-    ...(options.headers || {}),
-  };
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const response = await fetch(path, { ...options, headers });
-  const data = await response.json().catch(() => ({}));
-  return { response, data };
 }
 
 function renderList(container, calculations) {
@@ -81,25 +52,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const refreshButton = document.getElementById("refresh-list");
   const logoutButton = document.getElementById("logout");
 
-  function updateAuthStatus() {
-    if (getToken()) {
-      setMessage(authStatus, "authenticated: jwt token found", "success");
-    } else {
-      setMessage(authStatus, "missing token: login first", "error");
-    }
-  }
-
   async function browseCalculations() {
     const { response, data } = await apiRequest("/calculations", { method: "GET" });
 
+    if (response.status === 401) {
+      signOut();
+      return;
+    }
+
     if (!response.ok) {
       renderList(listEl, []);
-      setMessage(messageEl, data.detail || "failed to browse calculations", "error");
+      setMessage(messageEl, data.detail || "could not load calculations", "error");
       return;
     }
 
     renderList(listEl, data);
-    setMessage(messageEl, "browse successful", "success");
+    setMessage(messageEl, "calculations loaded", "success");
   }
 
   addForm.addEventListener("submit", async (event) => {
@@ -120,8 +88,13 @@ document.addEventListener("DOMContentLoaded", () => {
       body: JSON.stringify({ a: Number(a), b: Number(b), type }),
     });
 
+    if (response.status === 401) {
+      signOut();
+      return;
+    }
+
     if (!response.ok) {
-      setMessage(messageEl, data.detail || "failed to create calculation", "error");
+      setMessage(messageEl, data.detail || "could not create calculation", "error");
       return;
     }
 
@@ -141,9 +114,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { response, data } = await apiRequest(`/calculations/${id}`, { method: "GET" });
 
+    if (response.status === 401) {
+      signOut();
+      return;
+    }
+
     if (!response.ok) {
       readResultEl.textContent = "";
-      setMessage(messageEl, data.detail || "failed to read calculation", "error");
+      setMessage(messageEl, data.detail || "could not load calculation", "error");
       return;
     }
 
@@ -175,8 +153,13 @@ document.addEventListener("DOMContentLoaded", () => {
       body: JSON.stringify({ a: Number(a), b: Number(b), type }),
     });
 
+    if (response.status === 401) {
+      signOut();
+      return;
+    }
+
     if (!response.ok) {
-      setMessage(messageEl, data.detail || "failed to update calculation", "error");
+      setMessage(messageEl, data.detail || "could not update calculation", "error");
       return;
     }
 
@@ -196,8 +179,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { response, data } = await apiRequest(`/calculations/${id}`, { method: "DELETE" });
 
+    if (response.status === 401) {
+      signOut();
+      return;
+    }
+
     if (!response.ok) {
-      setMessage(messageEl, data.detail || "failed to delete calculation", "error");
+      setMessage(messageEl, data.detail || "could not delete calculation", "error");
       return;
     }
 
@@ -219,16 +207,21 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("read-id").value = id;
     document.getElementById("edit-id").value = id;
     document.getElementById("delete-id").value = id;
-    setMessage(messageEl, `loaded id #${id} into read/edit/delete forms`, "success");
+    setMessage(messageEl, `loaded #${id}`, "success");
   });
 
   logoutButton.addEventListener("click", () => {
-    clearToken();
-    updateAuthStatus();
-    setMessage(messageEl, "logged out", "success");
-    window.location.href = "/login.html";
+    signOut();
   });
 
-  updateAuthStatus();
-  browseCalculations();
+  syncAuthControls(Boolean(getToken()));
+
+  requireAuth().then((allowed) => {
+    if (!allowed) {
+      return;
+    }
+
+    setMessage(authStatus, "signed in", "success");
+    browseCalculations();
+  });
 });

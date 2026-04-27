@@ -1,38 +1,23 @@
-function setMessage(el, message, type) {
-  el.textContent = message;
-  el.className = `message ${type || ""}`.trim();
-}
-
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-async function postJson(url, body) {
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  const data = await response.json().catch(() => ({}));
-  return { response, data };
-}
-
-function storeToken(token) {
-  localStorage.setItem("jwt_token", token);
-}
-
-function showToken(el, token) {
-  el.textContent = token ? `token saved: ${token.slice(0, 24)}...` : "";
-}
-
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const form = document.querySelector("form");
   const messageEl = document.getElementById("message");
-  const tokenEl = document.getElementById("token");
 
   if (!form) {
     return;
+  }
+
+  const redirected = await redirectIfAuthenticated();
+  if (redirected) {
+    return;
+  }
+
+  const flashMessage = consumeFlashMessage();
+  if (flashMessage) {
+    setMessage(messageEl, flashMessage, "success");
   }
 
   const mode = form.dataset.mode;
@@ -62,20 +47,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const endpoint = mode === "register" ? "/register" : "/login";
 
     try {
-      const { response, data } = await postJson(endpoint, { email, password });
+      const { response, data } = await apiRequest(endpoint, {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
 
       if (!response.ok) {
-        setMessage(messageEl, data.detail || "request failed", "error");
+        setMessage(messageEl, data.detail || "could not complete request", "error");
         return;
       }
 
       if (data.access_token) {
         storeToken(data.access_token);
-        showToken(tokenEl, data.access_token);
       }
 
-      const successText = mode === "register" ? "registration successful" : "login successful";
-      setMessage(messageEl, successText, "success");
+      setMessage(messageEl, mode === "register" ? "account created" : "login successful", "success");
       form.reset();
 
       if (data.access_token) {

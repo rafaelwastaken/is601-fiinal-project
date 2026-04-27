@@ -11,11 +11,12 @@
       <header class="calc-header">
         <div>
           <h1>Calculation Workspace</h1>
-          <p class="subtitle">browse, read, edit, add, and delete your own calculations</p>
+          <p class="subtitle">manage your calculations and account</p>
         </div>
         <div class="header-actions">
-          <a class="ghost-button" href="/login.html">login</a>
-          <button id="logout" class="danger-soft" type="button">Logout</button>
+          <a class="ghost-button" href="/login.html" data-auth-state="logged-out">login</a>
+          <a class="ghost-button" href="/account.html" data-auth-state="logged-in">account</a>
+          <button id="logout" class="danger-soft" type="button" data-auth-state="logged-in">logout</button>
         </div>
       </header>
 
@@ -109,6 +110,7 @@
       <p id="calc-message" class="message" role="status" aria-live="polite"></p>
     </main>
 
+    <script src="/static/session.js"></script>
     <script src="/static/calculations.js"></script>
   </body>
 </html>

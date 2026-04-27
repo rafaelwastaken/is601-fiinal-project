@@ -20,7 +20,7 @@ body {
   min-height: 100vh;
   background: linear-gradient(155deg, var(--bg-top), var(--bg-bottom));
   color: var(--text);
-  font-family: "Nunito", "Trebuchet MS", "Segoe UI", sans-serif;
+  font-family: "Segoe UI", "Trebuchet MS", sans-serif;
   display: grid;
   place-items: center;
   padding: 24px;
@@ -145,6 +145,7 @@ a {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .calc-grid {
@@ -159,6 +160,10 @@ a {
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 14px;
+}
+
+.account-panel {
+  margin-top: 16px;
 }
 
 .panel h2 {
@@ -249,6 +254,10 @@ select:focus {
   width: auto;
   padding: 10px 14px;
   background: linear-gradient(90deg, #dc2626, #b91c1c);
+}
+
+[hidden] {
+  display: none !important;
 }
 
 @keyframes rise {

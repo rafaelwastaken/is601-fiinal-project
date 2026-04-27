@@ -9,7 +9,7 @@
   <body>
     <main class="auth-card">
       <h1>Welcome back</h1>
-      <p class="subtitle">log in to get your jwt token</p>
+      <p class="subtitle">log in to continue</p>
       <form data-mode="login" novalidate>
         <div class="field">
           <label for="email">Email</label>
@@ -25,9 +25,9 @@
       </form>
 
       <p id="message" class="message" role="status" aria-live="polite"></p>
-      <p id="token" class="token"></p>
       <div class="nav"><a href="/register.html">new here? create account</a></div>
     </main>
+    <script src="/static/session.js"></script>
     <script src="/static/auth.js"></script>
   </body>
 </html>

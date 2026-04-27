@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 
 from app.models.user import User
-from app.schemas.user import UserCreate
-from app.security import hash_password
+from app.schemas.user import PasswordChangeRequest, UserCreate
+from app.security import hash_password, verify_password
 
 
 def get_user_by_username(db: Session, username: str) -> User | None:
@@ -35,3 +35,13 @@ def build_unique_username(db: Session, email: str) -> str:
         suffix += 1
 
     return candidate
+
+
+def change_user_password(db: Session, user: User, password_in: PasswordChangeRequest) -> None:
+    if not verify_password(password_in.current_password, user.password_hash):
+        raise ValueError("current password is incorrect")
+
+    user.password_hash = hash_password(password_in.new_password)
+    db.add(user)
+    db.commit()
+    db.refresh(user)

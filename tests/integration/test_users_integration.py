@@ -85,3 +85,65 @@ def test_login_user_invalid_credentials(client):
     )
     assert login_response.status_code == 401
     assert login_response.json()["detail"] == "invalid credentials"
+
+
+def test_get_current_user_returns_profile(client):
+    register_response = client.post(
+        "/register",
+        json={"email": "profile@example.com", "password": "password123"},
+    )
+    assert register_response.status_code == 201
+
+    headers = {"Authorization": f"Bearer {register_response.json()['access_token']}"}
+    response = client.get("/users/me", headers=headers)
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["email"] == "profile@example.com"
+
+
+def test_change_password_updates_login(client):
+    register_response = client.post(
+        "/register",
+        json={"email": "change@example.com", "password": "password123"},
+    )
+    assert register_response.status_code == 201
+
+    headers = {"Authorization": f"Bearer {register_response.json()['access_token']}"}
+    update_response = client.post(
+        "/users/me/password",
+        json={"current_password": "password123", "new_password": "newpassword123"},
+        headers=headers,
+    )
+    assert update_response.status_code == 200
+    assert update_response.json()["message"] == "password updated"
+
+    old_login_response = client.post(
+        "/login",
+        json={"email": "change@example.com", "password": "password123"},
+    )
+    assert old_login_response.status_code == 401
+
+    new_login_response = client.post(
+        "/login",
+        json={"email": "change@example.com", "password": "newpassword123"},
+    )
+    assert new_login_response.status_code == 200
+
+
+def test_change_password_rejects_wrong_current_password(client):
+    register_response = client.post(
+        "/register",
+        json={"email": "wrong-current@example.com", "password": "password123"},
+    )
+    assert register_response.status_code == 201
+
+    headers = {"Authorization": f"Bearer {register_response.json()['access_token']}"}
+    response = client.post(
+        "/users/me/password",
+        json={"current_password": "badpassword", "new_password": "newpassword123"},
+        headers=headers,
+    )
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "current password is incorrect"

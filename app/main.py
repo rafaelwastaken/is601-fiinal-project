@@ -15,13 +15,21 @@ from app.crud.calculation import (
     list_calculations,
     update_calculation,
 )
-from app.crud.user import build_unique_username, create_user, get_user_by_email, get_user_by_username
+from app.crud.user import (
+    build_unique_username,
+    change_user_password,
+    create_user,
+    get_user_by_email,
+    get_user_by_username,
+)
 from app.db.session import Base, engine, get_db
 from app.models.user import User
 from app.schemas.calculation import CalculationCreate, CalculationRead, CalculationUpdate
 from app.schemas.user import (
+    MessageResponse,
     LoginRequest,
     LoginResponse,
+    PasswordChangeRequest,
     RegisterRequest,
     TokenResponse,
     UserCreate,
@@ -61,6 +69,11 @@ def calculations_page() -> FileResponse:
     return FileResponse(STATIC_DIR / "calculations.html")
 
 
+@app.get("/account.html", include_in_schema=False)
+def account_page() -> FileResponse:
+    return FileResponse(STATIC_DIR / "account.html")
+
+
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(auth_scheme),
     db: Session = Depends(get_db),
@@ -77,6 +90,11 @@ def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid token")
 
     return user
+
+
+@app.get("/users/me", response_model=UserRead)
+def read_current_user(current_user: User = Depends(get_current_user)) -> UserRead:
+    return UserRead.model_validate(current_user)
 
 
 @app.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
@@ -135,6 +153,20 @@ def login_user(payload: UserLogin, db: Session = Depends(get_db)) -> LoginRespon
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid credentials")
 
     return LoginResponse(message="login successful")
+
+
+@app.post("/users/me/password", response_model=MessageResponse)
+def update_password(
+    payload: PasswordChangeRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> MessageResponse:
+    try:
+        change_user_password(db, current_user, payload)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="current password is incorrect")
+
+    return MessageResponse(message="password updated")
 
 
 @app.get("/calculations", response_model=list[CalculationRead])

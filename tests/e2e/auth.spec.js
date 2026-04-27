@@ -55,3 +55,33 @@ test('shows invalid credentials for wrong password', async ({ page, request }) =
 
   await expect(page.locator('#message')).toHaveText('invalid credentials');
 });
+
+test('changes password and requires the new one for login', async ({ page, request }) => {
+  const email = `password_${Date.now()}@example.com`;
+  const setupResponse = await request.post('/register', {
+    data: { email, password: 'password123' },
+  });
+  expect(setupResponse.ok()).toBeTruthy();
+  const token = (await setupResponse.json()).access_token;
+
+  await page.goto('/login.html');
+  await page.evaluate((savedToken) => localStorage.setItem('jwt_token', savedToken), token);
+  await page.goto('/account.html');
+
+  await page.fill('#current-password', 'password123');
+  await page.fill('#new-password', 'newpassword123');
+  await page.fill('#confirm-password', 'newpassword123');
+  await page.click('#password-form button[type="submit"]');
+
+  await expect(page).toHaveURL(/\/login\.html$/);
+  await expect(page.locator('#message')).toHaveText('password updated. please sign in again.');
+
+  await page.fill('#email', email);
+  await page.fill('#password', 'password123');
+  await page.click('button[type="submit"]');
+  await expect(page.locator('#message')).toHaveText('invalid credentials');
+
+  await page.fill('#password', 'newpassword123');
+  await page.click('button[type="submit"]');
+  await expect(page).toHaveURL(/\/calculations\.html$/);
+});

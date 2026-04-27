@@ -22,7 +22,7 @@ test('creates, reads, updates, and deletes a calculation from the dashboard', as
   await page.selectOption('#add-type', 'Add');
   await page.click('#add-form button[type="submit"]');
 
-  await expect(page.locator('#calc-message')).toContainText('browse successful');
+  await expect(page.locator('#calc-message')).toContainText('calculations loaded');
   await expect(page.locator('#calc-list .calc-item')).toHaveCount(1);
 
   await page.click('#calc-list .calc-item button[data-id]');
@@ -55,19 +55,18 @@ test('shows validation error for divide by zero in add form', async ({ page, req
   await expect(page.locator('#calc-message')).toHaveText('division by zero is not allowed');
 });
 
-test('shows unauthorized state when token is missing', async ({ page }) => {
+test('redirects protected pages to login without a valid token', async ({ page }) => {
   await page.goto('/calculations.html');
-  await page.evaluate(() => localStorage.removeItem('jwt_token'));
-  await page.reload();
+  await expect(page).toHaveURL(/\/login\.html$/);
 
-  await expect(page.locator('#auth-status')).toHaveText('missing token: login first');
-  await expect(page.locator('#calc-message')).toHaveText('not authenticated');
+  await page.goto('/account.html');
+  await expect(page).toHaveURL(/\/login\.html$/);
 });
 
-test('shows invalid token error response', async ({ page }) => {
-  await page.goto('/calculations.html');
+test('redirects invalid tokens back to login', async ({ page }) => {
+  await page.goto('/login.html');
   await page.evaluate(() => localStorage.setItem('jwt_token', 'bad-token-value'));
-  await page.reload();
+  await page.goto('/calculations.html');
 
-  await expect(page.locator('#calc-message')).toHaveText('invalid token');
+  await expect(page).toHaveURL(/\/login\.html$/);
 });

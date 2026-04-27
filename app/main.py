@@ -1,9 +1,10 @@
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -54,6 +55,11 @@ def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/", include_in_schema=False)
+def home_page() -> FileResponse:
+    return FileResponse(STATIC_DIR / "index.html")
+
+
 @app.get("/register.html", include_in_schema=False)
 def register_page() -> FileResponse:
     return FileResponse(STATIC_DIR / "register.html")
@@ -72,6 +78,16 @@ def calculations_page() -> FileResponse:
 @app.get("/account.html", include_in_schema=False)
 def account_page() -> FileResponse:
     return FileResponse(STATIC_DIR / "account.html")
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    if exc.status_code == status.HTTP_404_NOT_FOUND:
+        accepts_html = "text/html" in request.headers.get("accept", "")
+        if request.method == "GET" and accepts_html:
+            return FileResponse(STATIC_DIR / "404.html", status_code=status.HTTP_404_NOT_FOUND)
+
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 
 def get_current_user(
@@ -226,3 +242,12 @@ def remove_calculation(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="calculation not found")
 
     delete_calculation(db, calculation)
+
+
+@app.get("/{rest_of_path:path}", include_in_schema=False)
+def catch_all(rest_of_path: str) -> FileResponse:
+    """Serve 404.html for any unmatched routes"""
+    return FileResponse(STATIC_DIR / "404.html", status_code=status.HTTP_404_NOT_FOUND)
+
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")

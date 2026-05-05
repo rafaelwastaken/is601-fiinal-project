@@ -22,7 +22,6 @@ test('creates, reads, updates, and deletes a calculation from the dashboard', as
   await page.selectOption('#add-type', 'Add');
   await page.click('#add-form button[type="submit"]');
 
-  await expect(page.locator('#calc-message')).toContainText('calculations loaded');
   await expect(page.locator('#calc-list .calc-item')).toHaveCount(1);
 
   await page.click('#calc-list .calc-item button[data-id]');

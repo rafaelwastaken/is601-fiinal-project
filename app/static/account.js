@@ -54,4 +54,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     setFlashMessage("password updated. please sign in again.");
     window.location.href = "/login.html";
   });
+
+  markPageReady();
 });

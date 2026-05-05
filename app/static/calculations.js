@@ -39,8 +39,7 @@ function renderList(container, calculations) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const authStatus = document.getElementById("auth-status");
-  const messageEl = document.getElementById("calc-message");
+  const messageEl = document.getElementById("calc-toast");
   const listEl = document.getElementById("calc-list");
   const readResultEl = document.getElementById("read-result");
 
@@ -67,7 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     renderList(listEl, data);
-    setMessage(messageEl, "calculations loaded", "success");
   }
 
   addForm.addEventListener("submit", async (event) => {
@@ -221,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    setMessage(authStatus, "signed in", "success");
     browseCalculations();
+    markPageReady();
   });
 });

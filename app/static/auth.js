@@ -59,16 +59,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (data.access_token) {
         storeToken(data.access_token);
+        form.reset();
+        window.location.replace("/calculations.html");
+        return;
       }
 
       setMessage(messageEl, mode === "register" ? "account created" : "login successful", "success");
       form.reset();
-
-      if (data.access_token) {
-        window.location.href = "/calculations.html";
-      }
     } catch {
       setMessage(messageEl, "could not reach server", "error");
     }
   });
+
+  markPageReady();
 });

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculator Home</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="landing-shell">
+      <section class="landing-hero">
+        <p class="kicker">final project</p>
+        <h1>Smart Calculator Workspace</h1>
+        <p class="subtitle">secure login, personal calculation history, and fast BREAD operations</p>
+        <div class="landing-actions">
+          <a class="cta" href="/login.html" data-auth-state="logged-out">login</a>
+          <a class="cta ghost" href="/register.html" data-auth-state="logged-out">create account</a>
+          <a class="cta" href="/calculations.html" data-auth-state="logged-in">open dashboard</a>
+          <a class="cta ghost" href="/account.html" data-auth-state="logged-in">account</a>
+        </div>
+      </section>
+
+      <section class="landing-grid">
+        <article class="panel">
+          <h2>Secure by default</h2>
+          <p>Secure login: your account and calculation history are private and protected. Passwords are hashed and your session is handled safely by the server.</p>
+        </article>
+        <article class="panel">
+          <h2>Clean workflow</h2>
+          <p>Create, read, update, and delete calculations in one place with instant feedback.</p>
+        </article>
+        <article class="panel">
+          <h2>Account controls</h2>
+          <p>Change your password from the account page and re-authenticate safely.</p>
+        </article>
+      </section>
+    </main>
+
+    <script src="/static/session.js"></script>
+    <script src="/static/home.js"></script>
+  </body>
+</html>

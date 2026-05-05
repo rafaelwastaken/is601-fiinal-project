@@ -1,5 +1,8 @@
 # IS601 Final Project
 
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/rafaelwastaken/is601-fiinal-project/ci-cd.yml?branch=master)](https://github.com/rafaelwastaken/is601-fiinal-project/actions/workflows/ci-cd.yml)
+[![Docker Image Version (latest by date)](https://img.shields.io/docker/v/rafaelwastaken/is601-final-project)](https://hub.docker.com/r/rafaelwastaken/is601-final-project)
+
 FastAPI calculator app with JWT authentication, protected calculation BREAD routes, and an account password-change flow
 
 ## Project Structure

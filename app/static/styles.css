@@ -170,6 +170,10 @@ a {
   text-align: center;
 }
 
+.notfound-shell .landing-actions {
+  justify-content: center;
+}
+
 .landing-hero {
   display: grid;
   gap: 12px;

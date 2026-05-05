@@ -51,7 +51,7 @@ test('shows validation error for divide by zero in add form', async ({ page, req
   await page.selectOption('#add-type', 'Divide');
   await page.click('#add-form button[type="submit"]');
 
-  await expect(page.locator('#calc-message')).toHaveText('division by zero is not allowed');
+  await expect(page.locator('#calc-toast .toast-text').first()).toHaveText('division by zero is not allowed');
 });
 
 test('redirects protected pages to login without a valid token', async ({ page }) => {
